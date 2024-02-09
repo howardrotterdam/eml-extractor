@@ -11,16 +11,16 @@ def extract_attachments(file: Path, destination: Path) -> None:
         email_message = message_from_file(f, policy=policy.default)
         email_subject = email_message.get('Subject')
         basepath = destination / sanitize_foldername(email_subject)
-        # ignore inline attachments
-        attachments = [item for item in email_message.iter_attachments() if item.is_attachment()]  # type: ignore
-        if not attachments:
-            print('>> No attachments found.')
+        # include inline attachments
+        inline_attach = [item for item in email_message.iter_parts()]
+        if not inline_attach:
+            print('>> No inline/attachments found.')
             return
-        for attachment in attachments:
-            filename = attachment.get_filename()
-            print(f'>> Attachment found: {filename}')
+        for file_inline_attach in inline_attach:
+            filename = file_inline_attach.get_filename()
+            print(f'>> Inline/Attachment found: {filename}')
             filepath = basepath / filename
-            payload = attachment.get_payload(decode=True)
+            payload = file_inline_attach.get_payload(decode=True)
             if filepath.exists():
                 overwrite = input(f'>> The file "{filename}" already exists! Overwrite it (Y/n)? ')
                 save_attachment(filepath, payload) if overwrite.upper() == 'Y' else print('>> Skipping...')
