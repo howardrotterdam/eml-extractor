@@ -1,6 +1,7 @@
 import re
 from argparse import ArgumentParser, ArgumentTypeError
-from email import message_from_file, policy
+from email import message_from_file, policy, message
+from email.message import Message
 from email.utils import parsedate_to_datetime, parseaddr
 from pathlib import Path
 from typing import List
@@ -26,10 +27,13 @@ def extract_attachments(file: Path, destination: Path) -> None:
             filename = file_inline_attach.get_filename()
             print(f'>> Inline/Attachment found: {filename}')
             attach_no += 1
-            filepath = basepath / ("%03d" % attach_no + ' ' + filename)
+            filepath = basepath / sanitize_foldername("%03d" % attach_no + ' ' + filename)
             payload = file_inline_attach.get_payload(decode=True)
             basepath.mkdir(exist_ok=True)
             save_attachment(filepath, payload)
+            file_inline_attach.set_payload("")
+        email_cleaned = email_message.as_bytes()
+        save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
 
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|\[\]\{\}:<>+=;,?!*"~#$%&@\']'
@@ -39,6 +43,11 @@ def save_attachment(file: Path, payload: bytes) -> None:
     with file.open('wb') as f:
         print(f'>> Saving attachment to "{file}"')
         f.write(payload)
+
+def save_message(file: Path, content: bytes) -> None:
+    with file.open('wb') as f:
+        print(f'>> Saving cleaned email to "{file}"')
+        f.write(content)
 
 def get_eml_files_from(path: Path, recursively: bool = False) -> List[Path]:
     if recursively:
