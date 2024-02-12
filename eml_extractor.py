@@ -19,10 +19,10 @@ def extract_attachments(file: Path, destination: Path) -> None:
         basepath = destination / sanitize_foldername(file_date + '-'+ from_addr)
         basepath.mkdir(exist_ok=True)
         # include inline attachments
-        inline_attach = [item for item in email_message.walk() if item.get_content_disposition()]
+        inline_attach = [item for item in email_message.walk() if item.get_filename()]
         if not inline_attach:
             print('>> No inline/attachments found.')
-            email_cleaned = email_message.as_bytes()
+            email_cleaned = email_message.as_string()
             save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
             return
         attach_no = 0
@@ -34,7 +34,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             payload = file_inline_attach.get_payload(decode=True)
             save_attachment(filepath, payload)
             file_inline_attach.set_payload("")
-        email_cleaned = email_message.as_bytes()
+        email_cleaned = email_message.as_string()
         save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
 
 def sanitize_foldername(name: str) -> str:
@@ -46,8 +46,8 @@ def save_attachment(file: Path, payload: bytes) -> None:
         print(f'>> Saving attachment to "{file}"')
         f.write(payload)
 
-def save_message(file: Path, content: bytes) -> None:
-    with file.open('wb') as f:
+def save_message(file: Path, content: str) -> None:
+    with file.open('w') as f:
         print(f'>> Saving cleaned email to "{file}"')
         f.write(content)
 
