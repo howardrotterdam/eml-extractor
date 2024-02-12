@@ -1,32 +1,35 @@
 import re
 from argparse import ArgumentParser, ArgumentTypeError
 from email import message_from_file, policy
+from email.utils import parsedate_to_datetime, parseaddr
 from pathlib import Path
 from typing import List
 
 
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
-    with file.open() as f:
+    with (file.open() as f):
         email_message = message_from_file(f, policy=policy.default)
         email_subject = email_message.get('Subject')
-        basepath = destination / sanitize_foldername(email_subject)
+        email_from = email_message.get('From')
+        from_addr = parseaddr(email_from)[1]
+        email_date = email_message.get('Date')
+        file_date = parsedate_to_datetime(email_date).isoformat()
+        basepath = destination / sanitize_foldername(file_date + '-'+ from_addr)
         # include inline attachments
-        inline_attach = [item for item in email_message.iter_parts()]
+        inline_attach = [item for item in email_message.iter_parts() if item.get_content_disposition()]
         if not inline_attach:
             print('>> No inline/attachments found.')
             return
+        attach_no = 0
         for file_inline_attach in inline_attach:
             filename = file_inline_attach.get_filename()
             print(f'>> Inline/Attachment found: {filename}')
-            filepath = basepath / filename
+            attach_no += 1
+            filepath = basepath / ("%03d" % attach_no + ' ' + filename)
             payload = file_inline_attach.get_payload(decode=True)
-            if filepath.exists():
-                overwrite = input(f'>> The file "{filename}" already exists! Overwrite it (Y/n)? ')
-                save_attachment(filepath, payload) if overwrite.upper() == 'Y' else print('>> Skipping...')
-            else:
-                basepath.mkdir(exist_ok=True)
-                save_attachment(filepath, payload)
+            basepath.mkdir(exist_ok=True)
+            save_attachment(filepath, payload)
 
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|\[\]\{\}:<>+=;,?!*"~#$%&@\']'
