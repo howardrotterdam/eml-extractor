@@ -11,7 +11,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     with (file.open() as f):
         email_message = message_from_file(f, policy=policy.default)
         email_subject = email_message.get('Subject')
-        print(email_subject)
+        email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
         email_from = email_message.get('From')
         from_addr = parseaddr(email_from)[1]
         email_date = email_message.get('Date')
