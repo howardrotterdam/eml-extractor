@@ -1,8 +1,7 @@
 import re
 from argparse import ArgumentParser, ArgumentTypeError
-from email import message_from_file, policy, message
-from email.message import Message
-from email.utils import parsedate_to_datetime, parseaddr
+from email import message_from_file, policy
+from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
 from pathlib import Path
 from typing import List
 
@@ -12,6 +11,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     with (file.open() as f):
         email_message = message_from_file(f, policy=policy.default)
         email_subject = email_message.get('Subject')
+        print(email_subject)
         email_from = email_message.get('From')
         from_addr = parseaddr(email_from)[1]
         email_date = email_message.get('Date')
@@ -36,7 +36,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
         save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
 
 def sanitize_foldername(name: str) -> str:
-    illegal_chars = r'[/\\|\[\]\{\}:<>+=;,?!*"~#$%&@\']'
+    illegal_chars = r'[/\\|\[\]\{\}:<>=?!*"~#&\']'
     return re.sub(illegal_chars, '_', name)
 
 def save_attachment(file: Path, payload: bytes) -> None:
