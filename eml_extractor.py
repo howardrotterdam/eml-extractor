@@ -17,8 +17,9 @@ def extract_attachments(file: Path, destination: Path) -> None:
         email_date = email_message.get('Date')
         file_date = parsedate_to_datetime(email_date).isoformat()
         basepath = destination / sanitize_foldername(file_date + '-'+ from_addr)
+        basepath.mkdir(exist_ok=True)
         # include inline attachments
-        inline_attach = [item for item in email_message.iter_parts() if item.get_content_disposition()]
+        inline_attach = [item for item in email_message.walk() if item.get_content_disposition()]
         if not inline_attach:
             print('>> No inline/attachments found.')
             email_cleaned = email_message.as_bytes()
@@ -31,7 +32,6 @@ def extract_attachments(file: Path, destination: Path) -> None:
             attach_no += 1
             filepath = basepath / sanitize_foldername("%03d" % attach_no + ' ' + filename)
             payload = file_inline_attach.get_payload(decode=True)
-            basepath.mkdir(exist_ok=True)
             save_attachment(filepath, payload)
             file_inline_attach.set_payload("")
         email_cleaned = email_message.as_bytes()
