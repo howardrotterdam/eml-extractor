@@ -38,7 +38,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
         save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
 
 def sanitize_foldername(name: str) -> str:
-    illegal_chars = r'[/\\|\[\]\{\}:<>=?!*"~#&\']'
+    illegal_chars = r'[/\\|:<>=?!*"~#&\']'
     return re.sub(illegal_chars, '_', name)
 
 def save_attachment(file: Path, payload: bytes) -> None:
