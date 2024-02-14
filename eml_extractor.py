@@ -47,7 +47,7 @@ def save_attachment(file: Path, payload: bytes) -> None:
         f.write(payload)
 
 def save_message(file: Path, message: bytes) -> None:
-    with file.open('wb') as f:
+    with file.open('w', encoding="utf8") as f:
         print(f'>> Saving cleaned email to "{file}"')
         f.write(message)
 
