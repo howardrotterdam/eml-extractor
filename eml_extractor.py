@@ -22,6 +22,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
         inline_attach = [item for item in email_message.walk() if item.get_filename()]
         if not inline_attach:
             print('>> No inline/attachments found.')
+            print(email_message.get_charsets())
             email_cleaned = email_message.as_string()
             save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
             return
