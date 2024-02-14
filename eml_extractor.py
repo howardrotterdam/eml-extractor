@@ -8,7 +8,7 @@ from typing import List
 
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
-    with (file.open() as f):
+    with (file.open(encoding="gb18030") as f):
         email_message = message_from_file(f, policy=policy.default)
         email_subject = email_message.get('Subject')
         email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
