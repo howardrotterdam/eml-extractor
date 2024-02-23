@@ -10,21 +10,24 @@ def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
     with (file.open(encoding="gb18030") as f):
         email_message = message_from_file(f, policy=policy.default)
-        save_policy=email_message.policy.clone(cte_type='8bit', utf8=True)
+        save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
         email_subject = email_message.get('Subject')
         email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
         email_from = email_message.get('From')
         from_addr = parseaddr(email_from)[1]
         email_date = email_message.get('Date')
         file_date = parsedate_to_datetime(email_date).isoformat()
-        basepath = destination / sanitize_foldername(file_date + '-'+ from_addr)
+        basepath = destination / sanitize_foldername(file_date + '-' + from_addr)
         basepath.mkdir(exist_ok=True)
         # include inline attachments
         inline_attach = [item for item in email_message.walk() if item.get_filename()]
         if not inline_attach:
             print('>> No inline/attachments found.')
-            email_cleaned = email_message.as_string(policy=save_policy)
-            save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+            try:
+                email_cleaned = email_message.as_string(policy=save_policy)
+                save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+            except Exception as X:
+                print(X)
             return
         attach_no = 0
         for file_inline_attach in inline_attach:
@@ -38,24 +41,29 @@ def extract_attachments(file: Path, destination: Path) -> None:
         email_cleaned = email_message.as_string(policy=save_policy)
         save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
 
+
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|:<>=?!*"~#&\']'
     return re.sub(illegal_chars, '_', name)
+
 
 def save_attachment(file: Path, payload: bytes) -> None:
     with file.open('wb') as f:
         print(f'>> Saving attachment to "{file}"')
         f.write(payload)
 
+
 def save_message(file: Path, message: str) -> None:
     with file.open('w', encoding="utf8") as f:
         print(f'>> Saving cleaned email to "{file}"')
         f.write(message)
 
+
 def get_eml_files_from(path: Path, recursively: bool = False) -> List[Path]:
     if recursively:
         return list(path.rglob('*.eml'))
     return list(path.glob('*.eml'))
+
 
 def check_file(arg_value: str) -> Path:
     file = Path(arg_value)
@@ -63,11 +71,13 @@ def check_file(arg_value: str) -> Path:
         return file
     raise ArgumentTypeError(f'"{file}" is not a valid EML file.')
 
+
 def check_path(arg_value: str) -> Path:
     path = Path(arg_value)
     if path.is_dir():
         return path
     raise ArgumentTypeError(f'"{path}" is not a valid directory.')
+
 
 def get_argument_parser():
     parser = ArgumentParser(
@@ -108,9 +118,11 @@ def get_argument_parser():
     )
     return parser
 
+
 def parse_arguments():
     parser = get_argument_parser()
     return parser.parse_args()
+
 
 def main():
     args = parse_arguments()
