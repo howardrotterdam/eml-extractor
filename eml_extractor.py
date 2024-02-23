@@ -6,52 +6,48 @@ from pathlib import Path
 from typing import List
 from os import rename
 from os.path import basename
+from shutil import copyfile
 
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
     errorpath = destination / 'err'
     errorpath.mkdir(exist_ok=True)
-    filebase = basename(file)
-    with (file.open(encoding="gb18030") as f):
-        email_message = message_from_file(f, policy=policy.default)
-        save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
-        email_subject = email_message.get('Subject')
-        email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
-        email_from = email_message.get('From')
-        from_addr = parseaddr(email_from)[1]
-        email_date = email_message.get('Date')
-        file_date = parsedate_to_datetime(email_date).isoformat()
-        basepath = destination / sanitize_foldername(file_date + '-' + from_addr)
-        basepath.mkdir(exist_ok=True)
-        # include inline attachments
-        inline_attach = [item for item in email_message.walk() if item.get_filename()]
-        if not inline_attach:
-            print('>> No inline/attachments found.')
-            try:
+    file_out_base = basename(file)
+    try:
+        with (file.open(encoding="gb18030") as f):
+            email_message = message_from_file(f, policy=policy.default)
+            save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
+            email_subject = email_message.get('Subject')
+            email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
+            email_from = email_message.get('From')
+            from_addr = parseaddr(email_from)[1]
+            email_date = email_message.get('Date')
+            file_date = parsedate_to_datetime(email_date).isoformat()
+            basepath = destination / sanitize_foldername(file_date + '-' + from_addr)
+            basepath.mkdir(exist_ok=True)
+            # include inline attachments
+            inline_attach = [item for item in email_message.walk() if item.get_filename()]
+            if not inline_attach:
+                print('>> No inline/attachments found.')
                 email_cleaned = email_message.as_string(policy=save_policy)
                 save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
-            except Exception as X:
-                print('=====', type(X), ': ', X)
-                print('Move ', file, 'to ', errorpath, '/', filebase)
-                rename(file, errorpath / filebase)
-            return
-        attach_no = 0
-        for file_inline_attach in inline_attach:
-            filename = file_inline_attach.get_filename()
-            print(f'>> Inline/Attachment found: {filename}')
-            attach_no += 1
-            filepath = basepath / sanitize_foldername("%03d" % attach_no + ' ' + filename)
-            payload = file_inline_attach.get_payload(decode=True)
-            save_attachment(filepath, payload)
-            file_inline_attach.set_payload("")
-        try:
+                return
+            attach_no = 0
+            for file_inline_attach in inline_attach:
+                filename_save = file_inline_attach.get_filename()
+                print(f'>> Inline/Attachment found: {filename_save}')
+                attach_no += 1
+                filepath = basepath / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
+                payload = file_inline_attach.get_payload(decode=True)
+                save_attachment(filepath, payload)
+                file_inline_attach.set_payload("")
             email_cleaned = email_message.as_string(policy=save_policy)
             save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
-        except Exception as X:
-            print('=====', type(X), ': ', X)
-            print('Move ', file, 'to ', errorpath, '/', filebase)
-            rename(file, errorpath / filebase)
-            return
+    except Exception as X:
+        print('=====', type(X), ': ', X)
+        error_filepath = errorpath / file_out_base
+        print('Copy', file, 'to', error_filepath)
+        copyfile(file, error_filepath)
 
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|:<>=?!*"~#&\']'
