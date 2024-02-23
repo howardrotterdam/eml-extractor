@@ -11,7 +11,6 @@ from shutil import copyfile
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
     error_path = destination / 'err'
-    error_path.mkdir(exist_ok=True)
     file_out_base = basename(file)
     try:
         with (file.open(mode='rb') as f):
@@ -45,6 +44,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
     except Exception as X:
         print('=====', type(X), ': ', X)
+        error_path.mkdir(exist_ok=True)
         error_filepath = error_path / file_out_base
         print('Copy', file, 'to', error_filepath)
         copyfile(file, error_filepath)
@@ -139,8 +139,10 @@ def main():
     if not eml_files:
         print(f'No EML files found!')
 
+    destination = args.destination
+    destination.mkdir(exist_ok=True)
     for file in eml_files:
-        extract_attachments(file, destination=args.destination)
+        extract_attachments(file, destination)
     print('Done.')
 
 
