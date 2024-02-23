@@ -4,17 +4,17 @@ from email import message_from_file, policy
 from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
 from pathlib import Path
 from typing import List
-from os import rename
 from os.path import basename
 from shutil import copyfile
 
+
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
-    errorpath = destination / 'err'
-    errorpath.mkdir(exist_ok=True)
+    error_path = destination / 'err'
+    error_path.mkdir(exist_ok=True)
     file_out_base = basename(file)
     try:
-        with (file.open(encoding="gb18030") as f):
+        with (file.open(mode='rb') as f):
             email_message = message_from_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
@@ -23,31 +23,32 @@ def extract_attachments(file: Path, destination: Path) -> None:
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
-            basepath = destination / sanitize_foldername(file_date + '-' + from_addr)
-            basepath.mkdir(exist_ok=True)
+            base_path = destination / sanitize_foldername(file_date + '-' + from_addr)
+            base_path.mkdir(exist_ok=True)
             # include inline attachments
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
                 print('>> No inline/attachments found.')
                 email_cleaned = email_message.as_string(policy=save_policy)
-                save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+                save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
                 return
             attach_no = 0
             for file_inline_attach in inline_attach:
                 filename_save = file_inline_attach.get_filename()
                 print(f'>> Inline/Attachment found: {filename_save}')
                 attach_no += 1
-                filepath = basepath / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
+                filepath = base_path / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
                 payload = file_inline_attach.get_payload(decode=True)
                 save_attachment(filepath, payload)
                 file_inline_attach.set_payload("")
             email_cleaned = email_message.as_string(policy=save_policy)
-            save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+            save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
     except Exception as X:
         print('=====', type(X), ': ', X)
-        error_filepath = errorpath / file_out_base
+        error_filepath = error_path / file_out_base
         print('Copy', file, 'to', error_filepath)
         copyfile(file, error_filepath)
+
 
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|:<>=?!*"~#&\']'
