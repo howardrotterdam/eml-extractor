@@ -4,10 +4,14 @@ from email import message_from_file, policy
 from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
 from pathlib import Path
 from typing import List
-
+from os import rename
+from os.path import basename
 
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
+    errorpath = destination / 'err'
+    errorpath.mkdir(exist_ok=True)
+    filename = basename(file)
     with (file.open(encoding="gb18030") as f):
         email_message = message_from_file(f, policy=policy.default)
         save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
@@ -27,7 +31,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 email_cleaned = email_message.as_string(policy=save_policy)
                 save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
             except Exception as X:
-                print("=====", type(X), " - ", X)
+                print("=====", type(X), ": ", X)
+                rename(file, errorpath / filename)
             return
         attach_no = 0
         for file_inline_attach in inline_attach:
