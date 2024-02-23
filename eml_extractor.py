@@ -11,7 +11,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
     errorpath = destination / 'err'
     errorpath.mkdir(exist_ok=True)
-    filename = basename(file)
+    filebase = basename(file)
     with (file.open(encoding="gb18030") as f):
         email_message = message_from_file(f, policy=policy.default)
         save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
@@ -32,8 +32,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
             except Exception as X:
                 print('=====', type(X), ': ', X)
-                print('Move ', file, 'to ', errorpath, '/', filename)
-                rename(file, errorpath / filename)
+                print('Move ', file, 'to ', errorpath, '/', filebase)
+                rename(file, errorpath / filebase)
             return
         attach_no = 0
         for file_inline_attach in inline_attach:
@@ -49,8 +49,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
             save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
         except Exception as X:
             print('=====', type(X), ': ', X)
-            print('Move ', file, 'to ', errorpath, '/', filename)
-            rename(file, errorpath / filename)
+            print('Move ', file, 'to ', errorpath, '/', filebase)
+            rename(file, errorpath / filebase)
             return
 
 def sanitize_foldername(name: str) -> str:
