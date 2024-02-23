@@ -27,8 +27,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 email_cleaned = email_message.as_string(policy=save_policy)
                 save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
             except Exception as X:
-                print("=====", X)
-                exit
+                print("=====", type(X), " - ", X)
             return
         attach_no = 0
         for file_inline_attach in inline_attach:
