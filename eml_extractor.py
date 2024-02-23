@@ -44,9 +44,14 @@ def extract_attachments(file: Path, destination: Path) -> None:
             payload = file_inline_attach.get_payload(decode=True)
             save_attachment(filepath, payload)
             file_inline_attach.set_payload("")
-        email_cleaned = email_message.as_string(policy=save_policy)
-        save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
-
+        try:
+            email_cleaned = email_message.as_string(policy=save_policy)
+            save_message(basepath / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+        except Exception as X:
+            print('=====', type(X), ': ', X)
+            print('Move ', file, 'to ', errorpath, '/', filename)
+            rename(file, errorpath / filename)
+            return
 
 def sanitize_foldername(name: str) -> str:
     illegal_chars = r'[/\\|:<>=?!*"~#&\']'
