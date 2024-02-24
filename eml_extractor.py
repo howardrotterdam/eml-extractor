@@ -27,11 +27,11 @@ def extract_attachments(file: Path, destination: Path) -> None:
             text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/')]
             for text_part in text_parts:
                 payload = text_part.get_payload(decode=True)
-                print(payload)
-                if isinstance(payload, str):
-                    text_part.set_payload(payload.encode(encoding='utf-8'))
-                    text_part.replace_header('content-transfer-encoding', '8bit')
-                    text_part.set_charset('utf-8')
+                charset = text_part.get_charset()
+                payload_decoded = payload.decode(encoding=charset)
+                text_part.set_payload(payload_decoded.encode(encoding='utf-8'))
+                text_part.replace_header('content-transfer-encoding', '8bit')
+                text_part.set_charset('utf-8')
             # include inline attachments
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
