@@ -7,6 +7,7 @@ from typing import List
 from os.path import basename
 from shutil import copyfile
 
+max_len_subject = 40
 
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
@@ -17,7 +18,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
-            email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
+            email_subject = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
             email_from = email_message.get('From')
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
