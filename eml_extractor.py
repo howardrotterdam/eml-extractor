@@ -1,8 +1,7 @@
 import re
 from argparse import ArgumentParser, ArgumentTypeError
 from email import message_from_binary_file, policy
-from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
-from email.encoders import encode_7or8bit
+from email.utils import parsedate_to_datetime, parseaddr
 from pathlib import Path
 from typing import List
 from os.path import basename
@@ -14,7 +13,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     error_path = destination / 'err'
     file_out_base = basename(file)
     try:
-        with ((file.open(mode='rb') as f)):
+        with (file.open(mode='rb') as f):
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
@@ -27,9 +26,9 @@ def extract_attachments(file: Path, destination: Path) -> None:
             base_path.mkdir(exist_ok=True)
             text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/')]
             for text_part in text_parts:
-                payload = text_part.get_payload(decode=True) #.encode(encoding='utf-8')
+                payload = text_part.get_payload(decode=True)
                 if isinstance(payload, str):
-                    text_part.set_payload(payload.encode(encoding = 'utf-8'))
+                    text_part.set_payload(payload.encode(encoding='utf-8'))
                     text_part.replace_header('content-transfer-encoding', '8bit')
                     text_part.set_charset('utf-8')
             # include inline attachments
