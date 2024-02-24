@@ -19,8 +19,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
-            email_message.replace_header('Subject', email_subject)
-            print("===== Subject:", email_subject)
+            if email_subject:
+                email_message.replace_header('Subject', email_subject)
             email_subject_file = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
@@ -68,7 +68,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_cleaned = email_message.as_bytes(policy=save_policy)
             save_message(base_path / sanitize_foldername(email_subject_file + ".eml"), email_cleaned)
     except Exception as X:
-        print('=====', type(X), ': ', X)
+        print('===== ERROR', type(X), ': ', X)
         error_path.mkdir(exist_ok=True)
         error_filepath = error_path / file_out_base
         print('Copy', file, 'to', error_filepath)
