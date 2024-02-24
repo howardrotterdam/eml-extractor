@@ -2,6 +2,7 @@ import re
 from argparse import ArgumentParser, ArgumentTypeError
 from email import message_from_binary_file, policy
 from email.utils import parsedate_to_datetime, parseaddr
+from email.header import decode_header
 from pathlib import Path
 from typing import List
 from os.path import basename
@@ -18,7 +19,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
-            email_subject = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
+            email_message.replace_header('subject', email_subject)
+            email_subject_file = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
             email_from = email_message.get('From')
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
@@ -43,7 +45,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             if not inline_attach:
                 print('>> No inline/attachments found.')
                 email_cleaned = email_message.as_bytes(policy=save_policy)
-                save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+                save_message(base_path / sanitize_foldername(email_subject_file + ".eml"), email_cleaned)
                 return
             attach_no = 0
             for file_inline_attach in inline_attach:
@@ -55,7 +57,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 save_attachment(filepath, payload)
                 file_inline_attach.set_payload("")
             email_cleaned = email_message.as_bytes(policy=save_policy)
-            save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
+            save_message(base_path / sanitize_foldername(email_subject_file + ".eml"), email_cleaned)
     except Exception as X:
         print('=====', type(X), ': ', X)
         error_path.mkdir(exist_ok=True)
