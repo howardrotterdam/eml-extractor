@@ -2,6 +2,7 @@ import re
 from argparse import ArgumentParser, ArgumentTypeError
 from email import message_from_binary_file, policy
 from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
+from email.encoders import encode_7or8bit
 from pathlib import Path
 from typing import List
 from os.path import basename
@@ -24,6 +25,11 @@ def extract_attachments(file: Path, destination: Path) -> None:
             file_date = parsedate_to_datetime(email_date).isoformat()
             base_path = destination / sanitize_foldername(file_date + '-' + from_addr)
             base_path.mkdir(exist_ok=True)
+            text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/')]
+            for text_part in text_parts:
+                payload = text_part.get_payload(decode=True)
+                text_part.set_payload(payload)
+                encode_7or8bit(text_part)
             # include inline attachments
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
