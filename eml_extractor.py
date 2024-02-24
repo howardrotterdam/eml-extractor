@@ -29,6 +29,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 payload = text_part.get_payload(decode=True)
                 charset = text_part.get_content_charset()
                 charset = 'gb18030' if charset == 'gb2312' else charset # Sometimes text with charset gb2312 includes characters which is in fact from charset gb18030.
+                charset = 'iso2022_jp_2' if charset == 'iso-2022-cn' else charset # iso-2022-cn not supported by codecs.decode().
                 payload_decoded = payload.decode(encoding=charset)
                 text_part.set_payload(payload_decoded.encode(encoding='utf-8'))
                 try:
