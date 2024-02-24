@@ -24,7 +24,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             file_date = parsedate_to_datetime(email_date).isoformat()
             base_path = destination / sanitize_foldername(file_date + '-' + from_addr)
             base_path.mkdir(exist_ok=True)
-            text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/')]
+            text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/') and not item.get_filename()]
             for text_part in text_parts:
                 payload = text_part.get_payload(decode=True)
                 charset = text_part.get_content_charset()
