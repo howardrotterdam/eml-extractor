@@ -139,8 +139,7 @@ def main():
     if not eml_files:
         print(f'No EML files found!')
 
-    destination = Path(args.destination)
-    destination.mkdir(exist_ok=True)
+    destination = args.destination
     for file in eml_files:
         extract_attachments(file, destination)
     print('Done.')
