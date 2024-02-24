@@ -18,15 +18,18 @@ def extract_attachments(file: Path, destination: Path) -> None:
         with (file.open(mode='rb') as f):
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
-            email_subject = email_message.get('Subject', failobj='')
+            email_subject = email_message.get('Subject')
             email_message.replace_header('Subject', email_subject)
             email_subject_file = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
-            email_from = email_message.get('From', failobj='')
-            email_message.replace_header('From', email_from)
-            email_to = email_message.get('To', failobj='')
-            email_message.replace_header('To', email_to)
-            email_cc = email_message.get('Cc', failobj='')
-            email_message.replace_header('Cc', email_cc)
+            email_from = email_message.get('From')
+            if email_from:
+                email_message.header.replace_header('From', email_from)
+            email_to = email_message.get('To')
+            if email_to:
+                email_message.replace_header('To', email_to)
+            email_cc = email_message.get('Cc')
+            if email_cc:
+                email_message.replace_header('Cc', email_cc)
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
