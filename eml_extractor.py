@@ -20,6 +20,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
             email_message.replace_header('Subject', email_subject)
+            print("===== Subject:", email_subject)
             email_subject_file = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
