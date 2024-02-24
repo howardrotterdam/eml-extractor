@@ -21,16 +21,20 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_subject = email_message.get('Subject')
             if email_subject:
                 email_message.replace_header('Subject', email_subject)
+                print('Subject:', email_subject)
             email_subject_file = "NoSubject" if len(email_subject) == 0 else email_subject[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
                 email_message.replace_header('From', email_from)
+                print('From:', email_from)
             email_to = email_message.get('To')
             if email_to:
                 email_message.replace_header('To', email_to)
+                print('To:', email_to)
             email_cc = email_message.get('Cc')
             if email_cc:
                 email_message.replace_header('Cc', email_cc)
+                print('CC:', email_cc)
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
