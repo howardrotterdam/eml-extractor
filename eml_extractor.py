@@ -28,7 +28,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
                 print('>> No inline/attachments found.')
-                email_cleaned = email_message.as_string(policy=save_policy)
+                email_cleaned = email_message.as_bytes(policy=save_policy)
                 save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
                 return
             attach_no = 0
@@ -40,7 +40,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 payload = file_inline_attach.get_payload(decode=True)
                 save_attachment(filepath, payload)
                 file_inline_attach.set_payload("")
-            email_cleaned = email_message.as_string(policy=save_policy)
+            email_cleaned = email_message.as_bytes(policy=save_policy)
             save_message(base_path / sanitize_foldername(email_subject + ".eml"), email_cleaned)
     except Exception as X:
         print('=====', type(X), ': ', X)
