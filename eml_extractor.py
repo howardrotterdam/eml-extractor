@@ -33,9 +33,9 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 if charset != 'iso-2022-cn': # iso-2022-cn not supported by codecs.decode().
                     payload_decoded = payload.decode(encoding=charset)
                     text_part.set_payload(payload_decoded.encode(encoding='utf-8'))
-                    try:
+                    if text_part.get('content-transfer-encoding'):
                         text_part.replace_header('content-transfer-encoding', '8bit')
-                    except:
+                    else:
                         text_part.add_header('content-transfer-encoding', '8bit')
                     text_part.set_charset('utf-8')
             # include inline attachments
