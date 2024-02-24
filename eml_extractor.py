@@ -1,6 +1,6 @@
 import re
 from argparse import ArgumentParser, ArgumentTypeError
-from email import message_from_file, policy
+from email import message_from_binary_file, policy
 from email.utils import parsedate_to_datetime, parseaddr, decode_rfc2231
 from pathlib import Path
 from typing import List
@@ -14,7 +14,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     file_out_base = basename(file)
     try:
         with (file.open(mode='rb') as f):
-            email_message = message_from_file(f, policy=policy.default)
+            email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
             email_subject = "NoSubject" if len(email_subject) == 0 else email_subject
