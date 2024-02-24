@@ -29,7 +29,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             for text_part in text_parts:
                 payload = text_part.get_payload(decode=True)
                 text_part.set_payload(payload)
-                encode_7or8bit(text_part)
+                text_part.replace_header('content-transfer-encoding', '8bit')
             # include inline attachments
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
