@@ -15,7 +15,6 @@ def fix_header_gb2312(header_value: str) -> str:
     Sometimes text labeled with charset gb2312 is in fact gb18030.
     """
     value_decoded=decode_header(header_value)
-    print(value_decoded)
     for i, (text, charset) in enumerate(value_decoded):
         if charset == 'gb2312':
             charset = 'gb18030'
@@ -41,14 +40,13 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_subject_file = "NoSubject" if len(email_subject_fixed) == 0 else email_subject_fixed[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
-                email_from_fixed = fix_header_gb2312(email_from)
                 email_message.replace_header('From', fix_header_gb2312(email_from))
             email_to = email_message.get('To')
-#            if email_to:
-#                email_message.replace_header('To', fix_header_gb2312(email_to))
+            if email_to:
+                email_message.replace_header('To', fix_header_gb2312(email_to))
             email_cc = email_message.get('Cc')
-#            if email_cc:
-#                email_message.replace_header('Cc', fix_header_gb2312(email_cc))
+            if email_cc:
+                email_message.replace_header('Cc', fix_header_gb2312(email_cc))
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
