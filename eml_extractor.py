@@ -10,7 +10,7 @@ from shutil import copyfile
 
 max_len_subject = 40
 
-def fix_header_gb2312(header_value: str) -> str
+def fix_header_gb2312(header_value: str) -> str:
     """
     Sometimes text labeled with charset gb2312 is in fact gb18030.
     """
