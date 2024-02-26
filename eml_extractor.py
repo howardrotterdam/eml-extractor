@@ -21,7 +21,7 @@ def fix_header_gb2312(header_value: str) -> str:
         if charset == 'gb2312':
             charset = 'gb18030'
         if charset == None:
-            value_decoded[i]=text
+            value_decoded[i]=str(text)
         else:
             value_decoded[i]=str(text, charset, errors='replace')
     fixed = u''.join(value_decoded)
@@ -34,7 +34,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     try:
         with (file.open(mode='rb') as f):
             email_message = message_from_binary_file(f)
-            save_policy = email_message.policy.clone(cte_type='8bit')
+            save_policy = policy.default.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
             if email_subject:
                 email_subject_fixed = fix_header_gb2312(email_subject)
