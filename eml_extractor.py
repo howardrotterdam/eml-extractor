@@ -17,7 +17,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     try:
         with (file.open(mode='rb') as f):
             email_message = message_from_binary_file(f)
-            save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
+            save_policy = email_message.policy.clone(cte_type='8bit')
             email_subject = email_message.get('Subject')
             subject_decoded=decode_header(email_subject)
             for i, (text, charset) in enumerate(subject_decoded):
