@@ -20,6 +20,8 @@ def fix_header_gb2312(header_value: str) -> str:
     for i, (text, charset) in enumerate(value_decoded):
         if charset == 'gb2312':
             charset = 'gb18030'
+        elif charset == 'unknown-8bit':
+            charset = 'utf8'
         if charset == None:
             if type(text) == str:
                 value_decoded[i]=text
