@@ -14,14 +14,15 @@ def fix_header_gb2312(header_value: str) -> str:
     """
     Sometimes text labeled with charset gb2312 is in fact gb18030.
     """
-    print('===== header_value:', header_value)
     value_decoded=decode_header(header_value)
+    print(value_decoded)
     for i, (text, charset) in enumerate(value_decoded):
-        if charset == None:
-            charset = 'utf8'
-        elif charset == 'gb2312':
+        if charset == 'gb2312':
             charset = 'gb18030'
-        value_decoded[i]=str(text, charset, errors='replace')
+        if charset == None:
+            value_decoded[i]=text
+        else:
+            value_decoded[i]=str(text, charset, errors='replace')
     fixed = u''.join(value_decoded)
     return fixed
 
