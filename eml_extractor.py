@@ -16,13 +16,13 @@ def extract_attachments(file: Path, destination: Path) -> None:
     file_out_base = basename(file)
     try:
         with (file.open(mode='rb') as f):
-            email_message = message_from_binary_file(f, policy=policy.default)
+            email_message = message_from_binary_file(f)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
             subject_decoded=decode_header(email_subject)
             for i, (text, charset) in enumerate(subject_decoded):
                 subject_decoded[i]=str(text, 'gb18030' if charset=='gb2312' else charset, errors='replace')
-            subject_fixed = u"".join(subject_decoded)
+            subject_fixed = u''.join(subject_decoded)
             if email_subject:
                 email_message.replace_header('Subject', subject_fixed)
                 print('Subject:', subject_fixed)
