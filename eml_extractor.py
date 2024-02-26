@@ -21,7 +21,10 @@ def fix_header_gb2312(header_value: str) -> str:
         if charset == 'gb2312':
             charset = 'gb18030'
         if charset == None:
-            value_decoded[i]=text.decode('utf8')
+            if type(text) == str:
+                value_decoded[i]=text
+            else:
+                value_decoded[i]=text.decode('utf8')
         else:
             value_decoded[i]=str(text, charset, errors='replace')
     fixed = u''.join(value_decoded)
