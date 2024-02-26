@@ -10,6 +10,16 @@ from shutil import copyfile
 
 max_len_subject = 40
 
+def fix_header_gb2312(header_value: str) -> str
+    """
+    Sometimes text labeled with charset gb2312 is in fact gb18030.
+    """
+    value_decoded=decode_header(header_value)
+    for i, (text, charset) in enumerate(value_decoded):
+        value_decoded[i]=str(text, 'gb18030' if charset=='gb2312' else charset, errors='replace')
+    fixed = u''.join(value_decoded)
+    return fixed
+
 def extract_attachments(file: Path, destination: Path) -> None:
     print(f'PROCESSING FILE "{file}"')
     error_path = destination / 'err'
@@ -19,26 +29,19 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_message = message_from_binary_file(f)
             save_policy = email_message.policy.clone(cte_type='8bit')
             email_subject = email_message.get('Subject')
-            subject_decoded=decode_header(email_subject)
-            for i, (text, charset) in enumerate(subject_decoded):
-                subject_decoded[i]=str(text, 'gb18030' if charset=='gb2312' else charset, errors='replace')
-            subject_fixed = u''.join(subject_decoded)
             if email_subject:
-                email_message.replace_header('Subject', subject_fixed)
-                print('Subject:', subject_fixed)
-            email_subject_file = "NoSubject" if len(subject_fixed) == 0 else subject_fixed[:max_len_subject]
+                email_subject_fixed = fix_header_gb2312(email_subject)
+                email_message.replace_header('Subject', email_subject_fixed)
+            email_subject_file = "NoSubject" if len(email_subject_fixed) == 0 else email_subject_fixed[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
-                email_message.replace_header('From', email_from)
-                print('From:', email_from)
+                email_message.replace_header('From', fix_header_gb2312(email_from))
             email_to = email_message.get('To')
             if email_to:
-                email_message.replace_header('To', email_to)
-                print('To:', email_to)
+                email_message.replace_header('To', fix_header_gb2312(email_to))
             email_cc = email_message.get('Cc')
             if email_cc:
-                email_message.replace_header('Cc', email_cc)
-                print('CC:', email_cc)
+                email_message.replace_header('Cc', fix_header_gb2312(email_cc))
             from_addr = parseaddr(email_from)[1]
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
