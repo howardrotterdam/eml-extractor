@@ -19,9 +19,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_message = message_from_binary_file(f, policy=policy.default)
             save_policy = email_message.policy.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
-            print('===== email_subject=')
-            for c in email_subject:
-                print(c)
+            print('===== email_subject=', decode_header(email_subject))
             if email_subject:
                 email_message.replace_header('Subject', email_subject)
                 print('Subject:', email_subject)
