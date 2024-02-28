@@ -50,6 +50,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_from = email_message.get('From')
             if email_from:
                 email_message.replace_header('From', fix_header_gb2312(email_from))
+                print(email_message.get('subject'))
             email_to = email_message.get('To')
             if email_to:
                 email_message.replace_header('To', fix_header_gb2312(email_to))
