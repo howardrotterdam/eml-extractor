@@ -50,14 +50,15 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_from = email_message.get('From')
             if email_from:
                 email_message.replace_header('From', fix_header_gb2312(email_from))
-                print(email_message.get('from'))
             email_to = email_message.get('To')
             if email_to:
                 email_message.replace_header('To', fix_header_gb2312(email_to))
             email_cc = email_message.get('Cc')
             if email_cc:
                 email_message.replace_header('Cc', fix_header_gb2312(email_cc))
+            print('===== 1')
             from_addr = parseaddr(email_from)[1]
+            print('===== 2')
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
             base_path = destination / sanitize_foldername(file_date + '-' + from_addr)
