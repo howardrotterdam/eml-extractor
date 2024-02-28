@@ -183,6 +183,7 @@ def parse_arguments():
 
 
 def main():
+    logging.getLogger('default').setLevel('debug')
     args = parse_arguments()
 
     eml_files = args.files or get_eml_files_from(args.source, args.recursive)
