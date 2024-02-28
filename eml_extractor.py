@@ -56,9 +56,8 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_cc = email_message.get('Cc')
             if email_cc:
                 email_message.replace_header('Cc', fix_header_gb2312(email_cc))
-            print('===== 1')
+            print('===== email_from:', email_from, type(email_from))
             from_addr = parseaddr(email_from)[1]
-            print('===== 2')
             email_date = email_message.get('Date')
             file_date = parsedate_to_datetime(email_date).isoformat()
             base_path = destination / sanitize_foldername(file_date + '-' + from_addr)
