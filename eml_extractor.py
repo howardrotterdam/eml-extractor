@@ -83,7 +83,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 return
             attach_no = 0
             for file_inline_attach in inline_attach:
-                filename_save = file_inline_attach.get_filename()
+                filename_save = decode_header(file_inline_attach.get_filename())
                 logging.debug(f'>> Inline/Attachment found: {filename_save}')
                 attach_no += 1
                 filepath = base_path / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
