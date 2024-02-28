@@ -44,6 +44,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
             if email_subject:
                 email_subject_fixed = fix_header_gb2312(email_subject)
                 email_message.replace_header('Subject', email_subject_fixed)
+            print('===== email_subject_fixed:', email_subject_fixed, type(email_subject_fixed))
             email_subject_file = "NoSubject" if not email_subject else email_subject_fixed[:max_len_subject]
             email_from = email_message.get('From')
             if email_from:
