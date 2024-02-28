@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List
 from os.path import basename
 from shutil import copyfile
+import logging
 
 max_len_subject = 40
 
@@ -31,7 +32,7 @@ def fix_header_gb2312(header_value: str) -> str:
     return fixed
 
 def extract_attachments(file: Path, destination: Path) -> None:
-    print(f'PROCESSING FILE "{file}"')
+    logging.debug(f'PROCESSING FILE "{file}"')
     error_path = destination / 'err'
     file_out_base = basename(file)
     try:
@@ -76,14 +77,14 @@ def extract_attachments(file: Path, destination: Path) -> None:
             # include inline attachments
             inline_attach = [item for item in email_message.walk() if item.get_filename()]
             if not inline_attach:
-                print('>> No inline/attachments found.')
+                logging.debug('>> No inline/attachments found.')
                 email_cleaned = email_message.as_bytes(policy=save_policy)
                 save_message(base_path / sanitize_foldername(email_subject_file + ".eml"), email_cleaned)
                 return
             attach_no = 0
             for file_inline_attach in inline_attach:
                 filename_save = file_inline_attach.get_filename()
-                print(f'>> Inline/Attachment found: {filename_save}')
+                logging.debug(f'>> Inline/Attachment found: {filename_save}')
                 attach_no += 1
                 filepath = base_path / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
                 payload = file_inline_attach.get_payload(decode=True)
@@ -92,10 +93,10 @@ def extract_attachments(file: Path, destination: Path) -> None:
             email_cleaned = email_message.as_bytes(policy=save_policy)
             save_message(base_path / sanitize_foldername(email_subject_file + ".eml"), email_cleaned)
     except Exception as X:
-        print('===== ERROR', type(X), ': ', X)
+        logging.error('===== ERROR', type(X), ': ', X)
         error_path.mkdir(exist_ok=True)
         error_filepath = error_path / file_out_base
-        print('Copy', file, 'to', error_filepath)
+        logging.warning('Copy', file, 'to', error_filepath)
         copyfile(file, error_filepath)
 
 
@@ -106,13 +107,13 @@ def sanitize_foldername(name: str) -> str:
 
 def save_attachment(file: Path, payload: bytes) -> None:
     with file.open('wb') as f:
-        print(f'>> Saving attachment to "{file}"')
+        logging.debug(f'>> Saving attachment to "{file}"')
         f.write(payload)
 
 
 def save_message(file: Path, message: bytes) -> None:
     with file.open('wb') as f:
-        print(f'>> Saving cleaned email to "{file}"')
+        logging.debug(f'>> Saving cleaned email to "{file}"')
         f.write(message)
 
 
@@ -186,12 +187,12 @@ def main():
 
     eml_files = args.files or get_eml_files_from(args.source, args.recursive)
     if not eml_files:
-        print(f'No EML files found!')
+        logging.warning(f'No EML files found!')
 
     destination = args.destination
     for file in eml_files:
         extract_attachments(file, destination)
-    print('Done.')
+    logging.info('Done.')
 
 
 if __name__ == '__main__':
