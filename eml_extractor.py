@@ -37,7 +37,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
     error_path = destination / 'err'
     file_out_base = basename(file)
     try:
-        with ((file.open(mode='rb') as f)):
+        with (file.open(mode='rb') as f):
             email_message = message_from_binary_file(f)
             save_policy = policy.default.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
