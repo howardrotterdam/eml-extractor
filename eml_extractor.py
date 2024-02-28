@@ -37,15 +37,16 @@ def extract_attachments(file: Path, destination: Path) -> None:
     error_path = destination / 'err'
     file_out_base = basename(file)
     try:
-        with (file.open(mode='rb') as f):
+        with ((file.open(mode='rb') as f)):
             email_message = message_from_binary_file(f)
             save_policy = policy.default.clone(cte_type='8bit', utf8=True)
             email_subject = email_message.get('Subject')
             if email_subject:
                 email_subject_fixed = fix_header_gb2312(email_subject)
                 email_message.replace_header('Subject', email_subject_fixed)
-            print('===== email_subject_fixed:', email_subject_fixed, type(email_subject_fixed))
-            email_subject_file = "NoSubject" if not email_subject else email_subject_fixed[:max_len_subject]
+                email_subject_file = email_subject_fixed[:max_len_subject]
+            else:
+                email_subject_file = 'NoSubject'
             email_from = email_message.get('From')
             if email_from:
                 email_message.replace_header('From', fix_header_gb2312(email_from))
