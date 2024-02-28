@@ -31,6 +31,9 @@ def fix_header_gb2312(header_value: str) -> str:
     fixed = u''.join(value_decoded)
     return fixed
 
+def remove_leading_spaces(multiline: str) -> str:
+    return ''.join([line.lstrip() for line in multiline.splitlines()])
+
 def extract_attachments(file: Path, destination: Path) -> None:
     logging.debug(f'PROCESSING FILE "{file}"')
     error_path = destination / 'err'
@@ -83,7 +86,7 @@ def extract_attachments(file: Path, destination: Path) -> None:
                 return
             attach_no = 0
             for file_inline_attach in inline_attach:
-                filename_save = fix_header_gb2312(file_inline_attach.get_filename())
+                filename_save = fix_header_gb2312(remove_leading_spaces(file_inline_attach.get_filename()))
                 logging.debug(f'>> Inline/Attachment found: {filename_save}')
                 attach_no += 1
                 filepath = base_path / sanitize_foldername("%03d" % attach_no + ' ' + filename_save)
