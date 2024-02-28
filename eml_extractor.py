@@ -31,8 +31,8 @@ def fix_header_gb2312(header_value: str) -> str:
     fixed = u''.join(value_decoded)
     return fixed
 
-def remove_leading_spaces(multiline: str) -> str:
-    return ''.join([line.lstrip() for line in multiline.splitlines()])
+def remove_spaces(multiline: str) -> str:
+    return ''.join([line.strip() for line in multiline.splitlines()])
 
 def extract_attachments(file: Path, destination: Path) -> None:
     logging.debug(f'PROCESSING FILE "{file}"')
