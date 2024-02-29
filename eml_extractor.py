@@ -9,7 +9,7 @@ from os.path import basename
 from shutil import copyfile
 import logging
 
-max_len_subject = 40
+max_len_subject = 80
 
 def fix_header_gb2312(header_value: str) -> str:
     """
