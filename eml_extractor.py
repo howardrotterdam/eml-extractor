@@ -64,7 +64,9 @@ def extract_attachments(file: Path, destination: Path) -> None:
             text_parts = [item for item in email_message.walk() if item.get_content_type().startswith('text/') and not item.get_filename()]
             for text_part in text_parts:
                 payload = text_part.get_payload(decode=True)
+                print('===== payload:', payload)
                 charset = text_part.get_content_charset()
+                print('===== charset:', charset)
                 charset = 'gb18030' if charset == 'gb2312' else charset # Sometimes text with charset gb2312 includes characters which is in fact from charset gb18030.
                 if charset != 'iso-2022-cn': # iso-2022-cn not supported by codecs.decode().
                     payload_decoded = payload.decode(encoding=charset)
